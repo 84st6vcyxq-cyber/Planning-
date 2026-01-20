@@ -1,17 +1,13 @@
-# Planning 5x8 (Web App / PWA simple)
+# Planning 5x8 — V3
 
-Fichiers:
-- index.html
-- style.css
-- app.js
+Corrections V3:
+- +15 minutes d'heures supplémentaires automatiquement sur chaque journée travaillée (Matin/Après-midi/Nuit).
+- Les HS ajoutées (saisie manuelle) s'ajoutent en plus.
 
-## Utilisation
-1) Ouvre `index.html` via un serveur web (GitHub Pages / Netlify / serveur local).
-2) Dans l'appli, définis la **Date de référence** et le **Poste ce jour-là** (ex: 2026-01-06 = Après-midi).
-3) Appuie sur un jour pour ajouter un congé ou une note.
+Horaires:
+- Matin: 04:00 → 12:15
+- Après-midi: 12:00 → 20:15
+- Nuit: 20:00 → 04:15
 
-## Cycle
+Cycle:
 `NNN RR AAA RR MMM RR` (15 jours)
-
-## Astuce iPhone
-Une fois hébergé: Safari → Partager → **Ajouter à l'écran d'accueil**.

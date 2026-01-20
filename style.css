@@ -11,6 +11,7 @@
   --N:#60a5fa; /* nuit */
   --R:#6b7280; /* repos */
   --V:#ef4444; /* congé */
+  --HS:#a78bfa; /* heures sup */
 }
 
 *{box-sizing:border-box}
@@ -59,7 +60,23 @@ input, select{
 button.primary{background:#2563eb; border:0}
 button.danger{background:#b91c1c; border:0}
 .row button{padding:12px; border-radius:12px; color:var(--text)}
-.hint{color:var(--muted); font-size:13px; margin-top:6px}
+.hint{color:var(--muted); font-size:13px; margin-top:10px; line-height:1.35}
+.smallHint{color:var(--muted); font-size:12px; margin-top:-2px}
+
+.stats{
+  display:grid;
+  gap:10px;
+  margin:12px 0 6px;
+}
+.stat{
+  border:1px solid var(--border);
+  background:#0b1220;
+  border-radius:14px;
+  padding:12px;
+}
+.statLabel{color:var(--muted); font-size:12px}
+.statValue{font-size:18px; margin-top:6px}
+.statSub{color:var(--muted); font-size:12px; margin-top:4px}
 
 .calHead{display:flex; align-items:center; justify-content:space-between}
 h2{margin:0; font-size:18px}
@@ -81,7 +98,7 @@ h2{margin:0; font-size:18px}
   background:#0b1220;
   border-radius:14px;
   padding:10px;
-  min-height:74px;
+  min-height:84px;
   position:relative;
   overflow:hidden;
   text-align:left;
@@ -102,6 +119,16 @@ h2{margin:0; font-size:18px}
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
+}
+.day .hs{
+  margin-top:6px;
+  display:inline-block;
+  font-size:12px;
+  padding:4px 8px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.15);
+  color:var(--HS);
+  background: color-mix(in oklab, var(--HS) 20%, transparent);
 }
 .day.muted{opacity:.35}
 .day.today{outline:2px solid #2563eb}
