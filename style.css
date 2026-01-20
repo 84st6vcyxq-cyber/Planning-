@@ -1,0 +1,153 @@
+:root{
+  --bg:#0b1220;
+  --card:#111827;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+  --border:#1f2937;
+  --shadow: 0 10px 25px rgba(0,0,0,.35);
+
+  --A:#f59e0b; /* après-midi */
+  --M:#22c55e; /* matin */
+  --N:#60a5fa; /* nuit */
+  --R:#6b7280; /* repos */
+  --V:#ef4444; /* congé */
+  --HS:#a78bfa; /* heures sup */
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial, sans-serif;
+  background: linear-gradient(180deg, #050814, var(--bg));
+  color: var(--text);
+}
+.top{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:16px 16px 8px;
+}
+h1{margin:0; font-size:20px}
+#subtitle{margin:4px 0 0; color:var(--muted); font-size:13px}
+
+.actions button{
+  border:1px solid var(--border);
+  background:transparent; color:var(--text);
+  padding:10px 12px; border-radius:10px;
+}
+.actions{display:flex; gap:8px}
+
+.wrap{
+  padding:12px 16px 28px;
+  display:grid; gap:12px;
+  grid-template-columns: 1fr;
+}
+.panel, .calendar{
+  background: rgba(17,24,39,.85);
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow: var(--shadow);
+  padding:14px;
+}
+.row{display:grid; gap:8px; margin:10px 0}
+label{color:var(--muted); font-size:13px}
+input, select{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#0b1220;
+  color:var(--text);
+}
+button.primary{background:#2563eb; border:0}
+button.danger{background:#b91c1c; border:0}
+.row button{padding:12px; border-radius:12px; color:var(--text)}
+.hint{color:var(--muted); font-size:13px; margin-top:10px; line-height:1.35}
+.smallHint{color:var(--muted); font-size:12px; margin-top:-2px}
+
+.stats{
+  display:grid;
+  gap:10px;
+  margin:12px 0 6px;
+}
+.stat{
+  border:1px solid var(--border);
+  background:#0b1220;
+  border-radius:14px;
+  padding:12px;
+}
+.statLabel{color:var(--muted); font-size:12px}
+.statValue{font-size:18px; margin-top:6px}
+.statSub{color:var(--muted); font-size:12px; margin-top:4px}
+
+.calHead{display:flex; align-items:center; justify-content:space-between}
+h2{margin:0; font-size:18px}
+
+.grid{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap:8px;
+}
+.dow{
+  color:var(--muted);
+  text-align:center;
+  font-size:12px;
+  padding:6px 0;
+}
+.day{
+  border:1px solid var(--border);
+  background:#0b1220;
+  border-radius:14px;
+  padding:10px;
+  min-height:84px;
+  position:relative;
+  overflow:hidden;
+  text-align:left;
+}
+.day .num{font-size:14px; color:var(--text)}
+.day .tag{
+  margin-top:8px;
+  display:inline-block;
+  font-size:12px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.15);
+}
+.day .note{
+  margin-top:6px;
+  font-size:12px;
+  color:var(--muted);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.day .hs{
+  margin-top:6px;
+  display:inline-block;
+  font-size:12px;
+  padding:4px 8px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.15);
+  color:var(--HS);
+  background: color-mix(in oklab, var(--HS) 20%, transparent);
+}
+.day.muted{opacity:.35}
+.day.today{outline:2px solid #2563eb}
+
+.tag.A{background: color-mix(in oklab, var(--A) 25%, transparent); color:var(--A)}
+.tag.M{background: color-mix(in oklab, var(--M) 25%, transparent); color:var(--M)}
+.tag.N{background: color-mix(in oklab, var(--N) 25%, transparent); color:var(--N)}
+.tag.R{background: color-mix(in oklab, var(--R) 25%, transparent); color:#d1d5db}
+.tag.V{background: color-mix(in oklab, var(--V) 25%, transparent); color:var(--V)}
+
+dialog{
+  border:1px solid var(--border);
+  border-radius:16px;
+  background: var(--card);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  width:min(520px, 92vw);
+}
+.dialogForm{display:grid; gap:10px; padding:14px}
+.dlgActions{display:flex; justify-content:flex-end; gap:10px; padding:0; margin:0}
+.dlgActions button{padding:10px 12px; border-radius:12px; color:var(--text); background:transparent; border:1px solid var(--border)}
+.dlgActions .primary{background:#2563eb; border:0}
