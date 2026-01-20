@@ -1,10 +1,9 @@
-# Planning 5x8 — V3.1
+# Planning 5x8 — V4
 
-Correctif:
-- Ajout d'un cache-busting (?v=3.1.0) pour forcer Safari/iOS à charger les derniers fichiers.
-- Sécurisation du calcul de poste (sanitizeShift) + fallback d'affichage, pour éviter les jours "vides".
+Pourquoi “Nuit” devient “Repos” sur certains mois ?
+- Très souvent: **décalage d'un jour** lié aux dates locales (DST / changements d'heure) et aux calculs en millisecondes.
+- V4 calcule l'écart en jours via un **compteur de jours UTC** => plus de dérive selon les mois.
 
-Inclut toujours:
-- HS auto +15 min / jour travaillé
-- Compteurs mois/année
-- HS ajoutées par jour
+Notes:
+- Les 15 minutes en fin de poste sont comptées en **HS auto** (+0h15/jour travaillé).
+- Tu peux ajouter des HS manuellement par jour (en plus).
