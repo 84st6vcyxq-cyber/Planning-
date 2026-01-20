@@ -1,9 +1,12 @@
-# Planning 5x8 — V4
+# Planning 5x8 — V4.2
 
-Pourquoi “Nuit” devient “Repos” sur certains mois ?
-- Très souvent: **décalage d'un jour** lié aux dates locales (DST / changements d'heure) et aux calculs en millisecondes.
-- V4 calcule l'écart en jours via un **compteur de jours UTC** => plus de dérive selon les mois.
+- Même fichiers que d'habitude: index.html / style.css / app.js
+- Fix du décalage sur certains mois: calcul des jours en UTC (anti-DST iOS)
+- Bouton Reset complet (efface tout + remet réf 2026-01-06 = Après-midi)
+- Diagnostic pour vérifier une date
 
-Notes:
-- Les 15 minutes en fin de poste sont comptées en **HS auto** (+0h15/jour travaillé).
-- Tu peux ajouter des HS manuellement par jour (en plus).
+Horaires:
+- Matin 04:00-12:15
+- Après-midi 12:00-20:15
+- Nuit 20:00-04:15
+HS auto: +15 min / jour travaillé

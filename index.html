@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Planning 5x8</title>
-  <link rel="stylesheet" href="style.v4.css" />
+  <link rel="stylesheet" href="style.css?v=4.2.0" />
   <meta name="theme-color" content="#111827" />
 </head>
 <body>
@@ -12,7 +12,7 @@
     <div>
       <h1>Planning 5x8</h1>
       <p id="subtitle"></p>
-      <p class="version">Version: <b>v4</b> (fix “nuits → repos” sur certains mois)</p>
+      <p class="version">Version: <b>v4.2</b> (UTC fix + reset + diagnostic)</p>
     </div>
     <div class="actions">
       <button id="prev" type="button">◀</button>
@@ -52,8 +52,20 @@
 
       <div class="row">
         <button id="saveRef" class="primary" type="button">Enregistrer le roulement</button>
-        <button id="resetOverrides" class="danger" type="button">Effacer congés/notes/HS</button>
+        <button id="resetAll" class="danger" type="button">Reset complet (efface tout)</button>
       </div>
+
+      <details class="diag">
+        <summary>Diagnostic (si ça décale)</summary>
+        <div class="row">
+          <label for="diagDate">Tester une date</label>
+          <input id="diagDate" type="date" />
+        </div>
+        <div class="row">
+          <button id="runDiag" type="button">Calculer</button>
+        </div>
+        <pre id="diagOut"></pre>
+      </details>
 
       <div class="hint">
         HS auto : <b>+15 min</b> à chaque journée travaillée (Matin/Après-midi/Nuit). Tu peux ajouter des HS en plus jour par jour.
@@ -97,6 +109,6 @@
     </form>
   </dialog>
 
-  <script src="app.v4.js"></script>
+  <script src="app.js?v=4.2.0"></script>
 </body>
 </html>

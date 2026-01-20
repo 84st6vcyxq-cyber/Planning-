@@ -1,36 +1,21 @@
-// ====== Planning 5x8 V3 ======
-// Nouveauté V3: +15 min d'HS automatiquement à chaque journée travaillée (M/A/N)
-
-// Cycle (15 jours): NNN RR AAA RR MMM RR
+// ====== Planning 5x8 V4.2 ======
 const ROTATION = ["N","N","N","R","R","A","A","A","R","R","M","M","M","R","R"];
-
-// Horaires (tes horaires)
 const SHIFT_TIME = {
   M: { start: "04:00", end: "12:15" },
   A: { start: "12:00", end: "20:15" },
   N: { start: "20:00", end: "04:15" }
 };
-
-const AUTO_OT_MIN_PER_WORKDAY = 15; // +15 min d'HS pour chaque jour travaillé
-
+const AUTO_OT_MIN_PER_WORKDAY = 15;
 const SHIFT_LABEL = { N:"Nuit", A:"Après-midi", M:"Matin", R:"Repos", V:"Congé" };
 const DOW = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
-
-
-function sanitizeShift(s){
-  if(!s) return "R";
-  const x = String(s).trim().toUpperCase();
-  return (x==="M"||x==="A"||x==="N"||x==="R"||x==="V") ? x : "R";
-}
-
-const LS_KEY = "planning58_v3";
+const LS_KEY = "planning58_v42";
 
 let state = loadState() ?? {
-  refDate: isoDate(new Date()),
+  refDate: isoDateLocal(new Date()),
   refShift: "A",
   viewYear: new Date().getFullYear(),
-  viewMonth: new Date().getMonth(), // 0-11
-  overrides: {} // { "YYYY-MM-DD": {shift:"V", note:"...", overtimeMinutes:120} } (overtimeMinutes = HS ajoutées)
+  viewMonth: new Date().getMonth(),
+  overrides: {}
 };
 
 const el = (id)=>document.getElementById(id);
@@ -38,9 +23,14 @@ const el = (id)=>document.getElementById(id);
 function saveState(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
 function loadState(){ try { return JSON.parse(localStorage.getItem(LS_KEY)); } catch { return null; } }
 
-function isoDate(d){
+function sanitizeShift(s){
+  const x = String(s ?? "").trim().toUpperCase();
+  return (x==="M"||x==="A"||x==="N"||x==="R"||x==="V") ? x : "R";
+}
+
+// ---- Dates robustes: compteur de jours UTC ----
+function isoDateLocal(d){
   const x = new Date(d);
-  x.setHours(0,0,0,0);
   const y = x.getFullYear();
   const m = String(x.getMonth()+1).padStart(2,"0");
   const day = String(x.getDate()).padStart(2,"0");
@@ -48,27 +38,30 @@ function isoDate(d){
 }
 function parseISO(s){
   const [y,m,d] = s.split("-").map(Number);
-  const dt = new Date(y, m-1, d);
-  dt.setHours(0,0,0,0);
-  return dt;
+  return { y, m: m-1, d };
 }
-function daysBetween(a, b){
-  const ms = 24*60*60*1000;
-  return Math.round((b.getTime() - a.getTime())/ms);
+function dayNumberUTC_fromISO(s){
+  const p = parseISO(s);
+  return Math.floor(Date.UTC(p.y, p.m, p.d) / 86400000);
+}
+function dayNumberUTC_fromDate(date){
+  return Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000);
+}
+function daysBetweenUTC(refISO, dateObj){
+  return dayNumberUTC_fromDate(dateObj) - dayNumberUTC_fromISO(refISO);
 }
 
+// ---- Durées ----
 function hhmmToMinutes(hhmm){
   const [h, m] = hhmm.split(":").map(Number);
   return h*60 + m;
 }
-
 function shiftBaseMinutes(shift){
   if(!SHIFT_TIME[shift]) return 0;
   const start = hhmmToMinutes(SHIFT_TIME[shift].start);
   const end = hhmmToMinutes(SHIFT_TIME[shift].end);
   return (end >= start) ? (end - start) : ((24*60 - start) + end);
 }
-
 const BASE_MINUTES = {
   M: shiftBaseMinutes("M"),
   A: shiftBaseMinutes("A"),
@@ -88,95 +81,83 @@ function minutesToDecimalHours(mins){
   return (Math.round(h*100)/100).toString().replace(".", ",") + " h";
 }
 
+// ---- Roulement ----
 function rotationIndexForDate(date){
-  const ref = parseISO(state.refDate);
-  let refIdx = ROTATION.findIndex(s => s === state.refShift);
+  let refIdx = ROTATION.findIndex(s => s === sanitizeShift(state.refShift));
   if(refIdx < 0) refIdx = 0;
 
-  const delta = daysBetween(ref, date);
-  let idx = (refIdx + (delta % ROTATION.length));
+  const delta = daysBetweenUTC(state.refDate, date);
+  let idx = refIdx + (delta % ROTATION.length);
+  idx %= ROTATION.length;
   if(idx < 0) idx += ROTATION.length;
   return idx;
 }
-
 function plannedShiftForDate(date){
   return sanitizeShift(ROTATION[rotationIndexForDate(date)]);
 }
-
 function effectiveShiftForDate(date){
-  const key = isoDate(date);
+  const key = isoDateLocal(date);
   const ov = state.overrides[key];
   if(ov?.shift) return sanitizeShift(ov.shift);
-  return sanitizeShift(plannedShiftForDate(date));
+  return plannedShiftForDate(date);
 }
 
+// ---- Heures sup ----
 function manualOvertimeMinutesForKey(key){
   const ov = state.overrides[key];
   return ov?.overtimeMinutes ? Number(ov.overtimeMinutes) : 0;
 }
-
 function autoOvertimeMinutesForShift(shift){
-  return (shift === "M" || shift === "A" || shift === "N") ? AUTO_OT_MIN_PER_WORKDAY : 0;
+  return (shift==="M"||shift==="A"||shift==="N") ? AUTO_OT_MIN_PER_WORKDAY : 0;
 }
-
 function totalOvertimeMinutesForDate(date){
-  const key = isoDate(date);
+  const key = isoDateLocal(date);
   const shift = effectiveShiftForDate(date);
   return autoOvertimeMinutesForShift(shift) + manualOvertimeMinutesForKey(key);
 }
 
-// ====== Totaux ======
+// ---- Totaux ----
 function calcTotalsForRange(dateStart, dateEndInclusive){
-  let base = 0;
-  let otAuto = 0;
-  let otManual = 0;
+  let base = 0, otAuto = 0, otManual = 0;
 
   const cur = new Date(dateStart);
-  while(cur <= dateEndInclusive){
-    const key = isoDate(cur);
+  cur.setHours(12,0,0,0);
+  const end = new Date(dateEndInclusive);
+  end.setHours(12,0,0,0);
+
+  while(cur <= end){
+    const key = isoDateLocal(cur);
     const shift = effectiveShiftForDate(cur);
 
     base += BASE_MINUTES[shift] ?? 0;
-
-    const a = autoOvertimeMinutesForShift(shift);
-    const m = manualOvertimeMinutesForKey(key);
-
-    otAuto += a;
-    otManual += m;
+    otAuto += autoOvertimeMinutesForShift(shift);
+    otManual += manualOvertimeMinutesForKey(key);
 
     cur.setDate(cur.getDate() + 1);
   }
-  return {
-    baseMinutes: base,
-    overtimeAutoMinutes: otAuto,
-    overtimeManualMinutes: otManual,
-    overtimeMinutes: otAuto + otManual,
-    totalMinutes: base + otAuto + otManual
-  };
+  return { baseMinutes: base, overtimeAutoMinutes: otAuto, overtimeManualMinutes: otManual, totalMinutes: base + otAuto + otManual };
 }
 
 function renderTotals(){
   const y = state.viewYear;
   const m = state.viewMonth;
 
-  const ms = new Date(y, m, 1); ms.setHours(0,0,0,0);
-  const me = new Date(y, m+1, 0); me.setHours(0,0,0,0);
+  const ms = new Date(y, m, 1);
+  const me = new Date(y, m+1, 0);
   const mt = calcTotalsForRange(ms, me);
 
   el("monthTotal").textContent = minutesToDecimalHours(mt.totalMinutes);
-  el("monthBreakdown").textContent =
-    `Base: ${minutesToDecimalHours(mt.baseMinutes)} • HS auto: ${minutesToDecimalHours(mt.overtimeAutoMinutes)} • HS ajoutées: ${minutesToDecimalHours(mt.overtimeManualMinutes)}`;
+  el("monthBreakdown").textContent = `Base: ${minutesToDecimalHours(mt.baseMinutes)} • HS auto: ${minutesToDecimalHours(mt.overtimeAutoMinutes)} • HS ajoutées: ${minutesToDecimalHours(mt.overtimeManualMinutes)}`;
 
-  const ys = new Date(y, 0, 1); ys.setHours(0,0,0,0);
-  const ye = new Date(y, 11, 31); ye.setHours(0,0,0,0);
+  const ys = new Date(y, 0, 1);
+  const ye = new Date(y, 11, 31);
   const yt = calcTotalsForRange(ys, ye);
 
   el("yearTotal").textContent = minutesToDecimalHours(yt.totalMinutes);
-  el("yearBreakdown").textContent =
-    `Base: ${minutesToDecimalHours(yt.baseMinutes)} • HS auto: ${minutesToDecimalHours(yt.overtimeAutoMinutes)} • HS ajoutées: ${minutesToDecimalHours(yt.overtimeManualMinutes)}`;
+  el("yearBreakdown").textContent = `Base: ${minutesToDecimalHours(yt.baseMinutes)} • HS auto: ${minutesToDecimalHours(yt.overtimeAutoMinutes)} • HS ajoutées: ${minutesToDecimalHours(yt.overtimeManualMinutes)}`;
 }
 
-// ====== UI ======
+// ---- UI ----
 function monthTitle(y,m){
   return new Date(y,m,1).toLocaleDateString("fr-FR", {month:"long", year:"numeric"});
 }
@@ -184,15 +165,15 @@ function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
 
 function render(){
   const now = new Date();
-  const todayKey = isoDate(now);
+  const todayKey = isoDateLocal(now);
 
   el("subtitle").textContent =
-    `Cycle: NNN RR AAA RR MMM RR • Réf: ${state.refDate} = ${SHIFT_LABEL[state.refShift]} • Durées: M ${minutesToHM(BASE_MINUTES.M)}, A ${minutesToHM(BASE_MINUTES.A)}, N ${minutesToHM(BASE_MINUTES.N)} • HS auto +0h15/jour travaillé`;
+    `Cycle: NNN RR AAA RR MMM RR • Réf: ${state.refDate} = ${SHIFT_LABEL[sanitizeShift(state.refShift)]} • Durées: M ${minutesToHM(BASE_MINUTES.M)}, A ${minutesToHM(BASE_MINUTES.A)}, N ${minutesToHM(BASE_MINUTES.N)} • HS auto +0h15/jour travaillé`;
 
   el("monthTitle").textContent = capitalize(monthTitle(state.viewYear, state.viewMonth));
 
   el("refDate").value = state.refDate;
-  el("refShift").value = state.refShift;
+  el("refShift").value = sanitizeShift(state.refShift);
 
   renderTotals();
 
@@ -218,7 +199,7 @@ function render(){
 
   for(let day=1; day<=last.getDate(); day++){
     const date = new Date(state.viewYear, state.viewMonth, day);
-    const key = isoDate(date);
+    const key = isoDateLocal(date);
 
     const shift = effectiveShiftForDate(date);
     const ov = state.overrides[key];
@@ -233,11 +214,16 @@ function render(){
     num.className = "num";
     num.textContent = day;
 
+    const code = document.createElement("div");
+    code.className = "shiftCode";
+    code.textContent = shift;
+
     const tag = document.createElement("div");
     tag.className = `tag ${shift}`;
     tag.textContent = SHIFT_LABEL[shift] ?? shift;
 
     cell.appendChild(num);
+    cell.appendChild(code);
     cell.appendChild(tag);
 
     if(hsMin > 0){
@@ -252,21 +238,21 @@ function render(){
     note.textContent = ov?.note ? ov.note : "";
     if(note.textContent) cell.appendChild(note);
 
-    cell.addEventListener("click", ()=>openDayDialog(key, shift));
+    cell.addEventListener("click", ()=>openDayDialog(key));
     grid.appendChild(cell);
   }
 }
 
-// ===== Dialog =====
+// ---- Dialog ----
 let currentKey = null;
 
-function openDayDialog(key, currentShift){
+function openDayDialog(key){
   currentKey = key;
   const ov = state.overrides[key] ?? {};
+  const p = parseISO(key);
+  const date = new Date(p.y, p.m, p.d);
 
-  // Si on passe un shift, on le calcule aussi au cas où
-  const date = parseISO(key);
-  const effShift = currentShift || effectiveShiftForDate(date);
+  const effShift = effectiveShiftForDate(date);
   const auto = autoOvertimeMinutesForShift(effShift);
 
   el("dlgTitle").textContent = `Jour: ${key}`;
@@ -298,7 +284,7 @@ function saveDayDialog(){
 
   if(shift || note || overtimeMinutes > 0){
     state.overrides[currentKey] = {
-      shift: shift || undefined,
+      shift: shift ? sanitizeShift(shift) : undefined,
       note: note || undefined,
       overtimeMinutes: overtimeMinutes > 0 ? overtimeMinutes : undefined
     };
@@ -309,7 +295,7 @@ function saveDayDialog(){
   render();
 }
 
-// ===== Navigation / actions =====
+// ---- Actions ----
 function addMonths(delta){
   let y = state.viewYear;
   let m = state.viewMonth + delta;
@@ -319,18 +305,43 @@ function addMonths(delta){
   saveState();
   render();
 }
-
 function saveReference(){
   state.refDate = el("refDate").value;
-  state.refShift = el("refShift").value;
+  state.refShift = sanitizeShift(el("refShift").value);
+  saveState();
+  render();
+}
+function resetAll(){
+  localStorage.removeItem(LS_KEY);
+  ["planning58_v1","planning58_v2","planning58_v3","planning58_v4","planning58_v42"].forEach(k=>localStorage.removeItem(k));
+  state = { refDate: "2026-01-06", refShift: "A", viewYear: 2026, viewMonth: 0, overrides: {} };
   saveState();
   render();
 }
 
-function resetOverrides(){
-  state.overrides = {};
-  saveState();
-  render();
+// ---- Diagnostic ----
+function runDiagnostic(){
+  const s = el("diagDate").value;
+  if(!s){ el("diagOut").textContent = "Choisis une date."; return; }
+  const p = parseISO(s);
+  const d = new Date(p.y, p.m, p.d);
+
+  const delta = daysBetweenUTC(state.refDate, d);
+  const refIdx = ROTATION.findIndex(x=>x===sanitizeShift(state.refShift));
+  const idx = rotationIndexForDate(d);
+  const planned = plannedShiftForDate(d);
+  const eff = effectiveShiftForDate(d);
+
+  el("diagOut").textContent =
+`Réf: ${state.refDate} = ${sanitizeShift(state.refShift)} (${SHIFT_LABEL[sanitizeShift(state.refShift)]})
+Date test: ${s}
+
+Delta jours (UTC): ${delta}
+Index ref (1ère occurrence dans cycle): ${refIdx}
+Index cycle (0-14): ${idx}
+
+Poste planifié: ${planned} (${SHIFT_LABEL[planned]})
+Poste effectif (avec overrides): ${eff} (${SHIFT_LABEL[eff]})`;
 }
 
 document.addEventListener("DOMContentLoaded", ()=>{
@@ -345,13 +356,16 @@ document.addEventListener("DOMContentLoaded", ()=>{
   });
 
   el("saveRef").addEventListener("click", saveReference);
-  el("resetOverrides").addEventListener("click", resetOverrides);
+  el("resetAll").addEventListener("click", resetAll);
 
   el("dlgSave").addEventListener("click", (e)=>{
     e.preventDefault();
     saveDayDialog();
     el("dayDialog").close();
   });
+
+  el("runDiag").addEventListener("click", runDiagnostic);
+  el("diagDate").value = isoDateLocal(new Date());
 
   render();
 });
