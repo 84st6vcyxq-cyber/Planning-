@@ -1,12 +1,12 @@
-# Planning 5x8 — V4.2
+# Planning 5x8 — V5
 
-- Même fichiers que d'habitude: index.html / style.css / app.js
-- Fix du décalage sur certains mois: calcul des jours en UTC (anti-DST iOS)
-- Bouton Reset complet (efface tout + remet réf 2026-01-06 = Après-midi)
-- Diagnostic pour vérifier une date
+- Diagnostic supprimé
+- Bouton central (entre ◀ et ▶) affiche le mois courant et change automatiquement
+  - Appui dessus => retour à aujourd’hui
+- Après enregistrement de la date de référence, le panneau Réglages disparaît
+  - Tu peux le réafficher avec ⚙︎
+- Compteurs (mois/année) toujours visibles au-dessus du calendrier
 
-Horaires:
-- Matin 04:00-12:15
-- Après-midi 12:00-20:15
-- Nuit 20:00-04:15
-HS auto: +15 min / jour travaillé
+Inclut:
+- Fix UTC (anti-décalage iOS / DST)
+- HS auto +15 min / jour travaillé + HS ajoutées

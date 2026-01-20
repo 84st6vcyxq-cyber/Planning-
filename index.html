@@ -4,25 +4,27 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Planning 5x8</title>
-  <link rel="stylesheet" href="style.css?v=4.2.0" />
+  <link rel="stylesheet" href="style.css?v=5.0.0" />
   <meta name="theme-color" content="#111827" />
 </head>
 <body>
   <header class="top">
-    <div>
+    <div class="brand">
       <h1>Planning 5x8</h1>
       <p id="subtitle"></p>
-      <p class="version">Version: <b>v4.2</b> (UTC fix + reset + diagnostic)</p>
     </div>
+
     <div class="actions">
-      <button id="prev" type="button">◀</button>
-      <button id="today" type="button">Aujourd’hui</button>
-      <button id="next" type="button">▶</button>
+      <button id="prev" type="button" aria-label="Mois précédent">◀</button>
+      <button id="monthBtn" type="button" aria-label="Revenir à aujourd’hui"></button>
+      <button id="next" type="button" aria-label="Mois suivant">▶</button>
+      <button id="toggleSettings" type="button" class="ghost" aria-label="Réglages">⚙︎</button>
     </div>
   </header>
 
   <main class="wrap">
-    <section class="panel">
+    <!-- Réglages (masqués après enregistrement de la date de référence) -->
+    <section class="panel" id="settingsPanel">
       <div class="row">
         <label for="refDate">Date de référence</label>
         <input id="refDate" type="date" />
@@ -37,35 +39,10 @@
         </select>
       </div>
 
-      <div class="stats">
-        <div class="stat">
-          <div class="statLabel">Heures (mois affiché)</div>
-          <div class="statValue" id="monthTotal">—</div>
-          <div class="statSub" id="monthBreakdown"></div>
-        </div>
-        <div class="stat">
-          <div class="statLabel">Heures (année affichée)</div>
-          <div class="statValue" id="yearTotal">—</div>
-          <div class="statSub" id="yearBreakdown"></div>
-        </div>
-      </div>
-
       <div class="row">
-        <button id="saveRef" class="primary" type="button">Enregistrer le roulement</button>
-        <button id="resetAll" class="danger" type="button">Reset complet (efface tout)</button>
+        <button id="saveRef" class="primary" type="button">Enregistrer</button>
+        <button id="resetAll" class="danger" type="button">Reset (efface tout)</button>
       </div>
-
-      <details class="diag">
-        <summary>Diagnostic (si ça décale)</summary>
-        <div class="row">
-          <label for="diagDate">Tester une date</label>
-          <input id="diagDate" type="date" />
-        </div>
-        <div class="row">
-          <button id="runDiag" type="button">Calculer</button>
-        </div>
-        <pre id="diagOut"></pre>
-      </details>
 
       <div class="hint">
         HS auto : <b>+15 min</b> à chaque journée travaillée (Matin/Après-midi/Nuit). Tu peux ajouter des HS en plus jour par jour.
@@ -74,8 +51,20 @@
 
     <section class="calendar">
       <div class="calHead">
-        <h2 id="monthTitle"></h2>
+        <div class="totals">
+          <div class="statMini">
+            <div class="statMiniLabel">Heures (mois)</div>
+            <div class="statMiniValue" id="monthTotal">—</div>
+            <div class="statMiniSub" id="monthBreakdown"></div>
+          </div>
+          <div class="statMini">
+            <div class="statMiniLabel">Heures (année)</div>
+            <div class="statMiniValue" id="yearTotal">—</div>
+            <div class="statMiniSub" id="yearBreakdown"></div>
+          </div>
+        </div>
       </div>
+
       <div class="grid" id="grid"></div>
     </section>
   </main>
@@ -109,6 +98,6 @@
     </form>
   </dialog>
 
-  <script src="app.js?v=4.2.0"></script>
+  <script src="app.js?v=5.0.0"></script>
 </body>
 </html>

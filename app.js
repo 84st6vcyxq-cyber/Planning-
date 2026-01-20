@@ -1,4 +1,4 @@
-// ====== Planning 5x8 V4.2 ======
+// ====== Planning 5x8 V5 ======
 const ROTATION = ["N","N","N","R","R","A","A","A","R","R","M","M","M","R","R"];
 const SHIFT_TIME = {
   M: { start: "04:00", end: "12:15" },
@@ -8,18 +8,18 @@ const SHIFT_TIME = {
 const AUTO_OT_MIN_PER_WORKDAY = 15;
 const SHIFT_LABEL = { N:"Nuit", A:"Après-midi", M:"Matin", R:"Repos", V:"Congé" };
 const DOW = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
-const LS_KEY = "planning58_v42";
+const LS_KEY = "planning58_v5";
 
 let state = loadState() ?? {
-  refDate: isoDateLocal(new Date()),
+  refDate: "2026-01-06",
   refShift: "A",
-  viewYear: new Date().getFullYear(),
-  viewMonth: new Date().getMonth(),
-  overrides: {}
+  viewYear: 2026,
+  viewMonth: 0,
+  overrides: {},
+  ui: { settingsHidden: false }
 };
 
 const el = (id)=>document.getElementById(id);
-
 function saveState(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
 function loadState(){ try { return JSON.parse(localStorage.getItem(LS_KEY)); } catch { return null; } }
 
@@ -28,7 +28,7 @@ function sanitizeShift(s){
   return (x==="M"||x==="A"||x==="N"||x==="R"||x==="V") ? x : "R";
 }
 
-// ---- Dates robustes: compteur de jours UTC ----
+// ---- Dates robustes UTC (anti décalage iOS / DST) ----
 function isoDateLocal(d){
   const x = new Date(d);
   const y = x.getFullYear();
@@ -163,18 +163,28 @@ function monthTitle(y,m){
 }
 function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
 
+function applySettingsVisibility(){
+  const panel = el("settingsPanel");
+  if(state.ui?.settingsHidden){
+    panel.classList.add("hidden");
+  }else{
+    panel.classList.remove("hidden");
+  }
+}
+
 function render(){
   const now = new Date();
   const todayKey = isoDateLocal(now);
 
   el("subtitle").textContent =
-    `Cycle: NNN RR AAA RR MMM RR • Réf: ${state.refDate} = ${SHIFT_LABEL[sanitizeShift(state.refShift)]} • Durées: M ${minutesToHM(BASE_MINUTES.M)}, A ${minutesToHM(BASE_MINUTES.A)}, N ${minutesToHM(BASE_MINUTES.N)} • HS auto +0h15/jour travaillé`;
+    `Réf: ${state.refDate} = ${SHIFT_LABEL[sanitizeShift(state.refShift)]} • Durées: M ${minutesToHM(BASE_MINUTES.M)}, A ${minutesToHM(BASE_MINUTES.A)}, N ${minutesToHM(BASE_MINUTES.N)} • HS auto +0h15/jour travaillé`;
 
-  el("monthTitle").textContent = capitalize(monthTitle(state.viewYear, state.viewMonth));
+  el("monthBtn").textContent = capitalize(monthTitle(state.viewYear, state.viewMonth));
 
   el("refDate").value = state.refDate;
   el("refShift").value = sanitizeShift(state.refShift);
 
+  applySettingsVisibility();
   renderTotals();
 
   const grid = el("grid");
@@ -214,16 +224,11 @@ function render(){
     num.className = "num";
     num.textContent = day;
 
-    const code = document.createElement("div");
-    code.className = "shiftCode";
-    code.textContent = shift;
-
     const tag = document.createElement("div");
     tag.className = `tag ${shift}`;
     tag.textContent = SHIFT_LABEL[shift] ?? shift;
 
     cell.appendChild(num);
-    cell.appendChild(code);
     cell.appendChild(tag);
 
     if(hsMin > 0){
@@ -305,55 +310,52 @@ function addMonths(delta){
   saveState();
   render();
 }
+
+function goToday(){
+  const d = new Date();
+  state.viewYear = d.getFullYear();
+  state.viewMonth = d.getMonth();
+  saveState();
+  render();
+}
+
 function saveReference(){
   state.refDate = el("refDate").value;
   state.refShift = sanitizeShift(el("refShift").value);
+  state.ui = state.ui ?? {};
+  state.ui.settingsHidden = true;
   saveState();
   render();
 }
+
+function toggleSettings(){
+  state.ui = state.ui ?? {};
+  state.ui.settingsHidden = !state.ui.settingsHidden;
+  saveState();
+  render();
+}
+
 function resetAll(){
   localStorage.removeItem(LS_KEY);
-  ["planning58_v1","planning58_v2","planning58_v3","planning58_v4","planning58_v42"].forEach(k=>localStorage.removeItem(k));
-  state = { refDate: "2026-01-06", refShift: "A", viewYear: 2026, viewMonth: 0, overrides: {} };
+  ["planning58_v1","planning58_v2","planning58_v3","planning58_v4","planning58_v42","planning58_v5"].forEach(k=>localStorage.removeItem(k));
+  state = {
+    refDate: "2026-01-06",
+    refShift: "A",
+    viewYear: 2026,
+    viewMonth: 0,
+    overrides: {},
+    ui: { settingsHidden: false }
+  };
   saveState();
   render();
-}
-
-// ---- Diagnostic ----
-function runDiagnostic(){
-  const s = el("diagDate").value;
-  if(!s){ el("diagOut").textContent = "Choisis une date."; return; }
-  const p = parseISO(s);
-  const d = new Date(p.y, p.m, p.d);
-
-  const delta = daysBetweenUTC(state.refDate, d);
-  const refIdx = ROTATION.findIndex(x=>x===sanitizeShift(state.refShift));
-  const idx = rotationIndexForDate(d);
-  const planned = plannedShiftForDate(d);
-  const eff = effectiveShiftForDate(d);
-
-  el("diagOut").textContent =
-`Réf: ${state.refDate} = ${sanitizeShift(state.refShift)} (${SHIFT_LABEL[sanitizeShift(state.refShift)]})
-Date test: ${s}
-
-Delta jours (UTC): ${delta}
-Index ref (1ère occurrence dans cycle): ${refIdx}
-Index cycle (0-14): ${idx}
-
-Poste planifié: ${planned} (${SHIFT_LABEL[planned]})
-Poste effectif (avec overrides): ${eff} (${SHIFT_LABEL[eff]})`;
 }
 
 document.addEventListener("DOMContentLoaded", ()=>{
   el("prev").addEventListener("click", ()=>addMonths(-1));
   el("next").addEventListener("click", ()=>addMonths(+1));
-  el("today").addEventListener("click", ()=>{
-    const d = new Date();
-    state.viewYear = d.getFullYear();
-    state.viewMonth = d.getMonth();
-    saveState();
-    render();
-  });
+  el("monthBtn").addEventListener("click", goToday);
+
+  el("toggleSettings").addEventListener("click", toggleSettings);
 
   el("saveRef").addEventListener("click", saveReference);
   el("resetAll").addEventListener("click", resetAll);
@@ -363,9 +365,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
     saveDayDialog();
     el("dayDialog").close();
   });
-
-  el("runDiag").addEventListener("click", runDiagnostic);
-  el("diagDate").value = isoDateLocal(new Date());
 
   render();
 });
