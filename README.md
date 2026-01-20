@@ -1,13 +1,10 @@
-# Planning 5x8 — V3
+# Planning 5x8 — V3.1
 
-Corrections V3:
-- +15 minutes d'heures supplémentaires automatiquement sur chaque journée travaillée (Matin/Après-midi/Nuit).
-- Les HS ajoutées (saisie manuelle) s'ajoutent en plus.
+Correctif:
+- Ajout d'un cache-busting (?v=3.1.0) pour forcer Safari/iOS à charger les derniers fichiers.
+- Sécurisation du calcul de poste (sanitizeShift) + fallback d'affichage, pour éviter les jours "vides".
 
-Horaires:
-- Matin: 04:00 → 12:15
-- Après-midi: 12:00 → 20:15
-- Nuit: 20:00 → 04:15
-
-Cycle:
-`NNN RR AAA RR MMM RR` (15 jours)
+Inclut toujours:
+- HS auto +15 min / jour travaillé
+- Compteurs mois/année
+- HS ajoutées par jour

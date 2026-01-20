@@ -16,6 +16,13 @@ const AUTO_OT_MIN_PER_WORKDAY = 15; // +15 min d'HS pour chaque jour travaillé
 const SHIFT_LABEL = { N:"Nuit", A:"Après-midi", M:"Matin", R:"Repos", V:"Congé" };
 const DOW = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
 
+
+function sanitizeShift(s){
+  if(!s) return "R";
+  const x = String(s).trim().toUpperCase();
+  return (x==="M"||x==="A"||x==="N"||x==="R"||x==="V") ? x : "R";
+}
+
 const LS_KEY = "planning58_v3";
 
 let state = loadState() ?? {
@@ -93,14 +100,14 @@ function rotationIndexForDate(date){
 }
 
 function plannedShiftForDate(date){
-  return ROTATION[rotationIndexForDate(date)];
+  return sanitizeShift(ROTATION[rotationIndexForDate(date)]);
 }
 
 function effectiveShiftForDate(date){
   const key = isoDate(date);
   const ov = state.overrides[key];
-  if(ov?.shift) return ov.shift;
-  return plannedShiftForDate(date);
+  if(ov?.shift) return sanitizeShift(ov.shift);
+  return sanitizeShift(plannedShiftForDate(date));
 }
 
 function manualOvertimeMinutesForKey(key){
@@ -228,7 +235,7 @@ function render(){
 
     const tag = document.createElement("div");
     tag.className = `tag ${shift}`;
-    tag.textContent = SHIFT_LABEL[shift];
+    tag.textContent = SHIFT_LABEL[shift] ?? shift;
 
     cell.appendChild(num);
     cell.appendChild(tag);
