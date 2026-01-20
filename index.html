@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Planning 5x8</title>
+  <link rel="stylesheet" href="style.css" />
+  <meta name="theme-color" content="#111827" />
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Planning 5x8</h1>
+      <p id="subtitle"></p>
+    </div>
+    <div class="actions">
+      <button id="prev" type="button">◀</button>
+      <button id="today" type="button">Aujourd’hui</button>
+      <button id="next" type="button">▶</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="panel">
+      <div class="row">
+        <label for="refDate">Date de référence</label>
+        <input id="refDate" type="date" />
+      </div>
+      <div class="row">
+        <label for="refShift">Poste ce jour-là</label>
+        <select id="refShift">
+          <option value="A">Après-midi</option>
+          <option value="M">Matin</option>
+          <option value="N">Nuit</option>
+          <option value="R">Repos</option>
+        </select>
+      </div>
+      <div class="row">
+        <button id="saveRef" class="primary" type="button">Enregistrer le roulement</button>
+        <button id="resetOverrides" class="danger" type="button">Effacer congés/notes</button>
+      </div>
+      <div class="hint">
+        Astuce : appuie sur un jour pour remplacer le roulement (Congé/Repos/Poste) et/ou ajouter une note.
+      </div>
+    </section>
+
+    <section class="calendar">
+      <div class="calHead">
+        <h2 id="monthTitle"></h2>
+      </div>
+      <div class="grid" id="grid"></div>
+    </section>
+  </main>
+
+  <dialog id="dayDialog">
+    <form method="dialog" class="dialogForm">
+      <h3 id="dlgTitle"></h3>
+
+      <label for="overrideShift">Statut (remplace le roulement)</label>
+      <select id="overrideShift">
+        <option value="">— Aucun (roulement normal) —</option>
+        <option value="V">Congé</option>
+        <option value="R">Repos</option>
+        <option value="A">Après-midi</option>
+        <option value="M">Matin</option>
+        <option value="N">Nuit</option>
+      </select>
+
+      <label for="note">Note</label>
+      <input id="note" type="text" placeholder="ex: RDV, formation..." />
+
+      <menu class="dlgActions">
+        <button value="cancel" type="submit">Annuler</button>
+        <button id="dlgSave" class="primary" value="default" type="button">Enregistrer</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
