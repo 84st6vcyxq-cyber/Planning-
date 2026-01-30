@@ -19,10 +19,13 @@
       <button id="monthBtn" type="button" aria-label="Revenir à aujourd’hui"></button>
       <button id="next" type="button" aria-label="Mois suivant">▶</button>
       <button id="toggleSettings" type="button" class="ghost" aria-label="Réglages">⚙︎</button>
+      <button id="showPlanning" type="button" class="ghost" aria-label="Planning">📅</button>
+      <button id="showPay" type="button" class="ghost" aria-label="Paie">💶</button>
     </div>
   </header>
 
   <main class="wrap">
+    <div id="planningView">
     <!-- Réglages (masqués après enregistrement de la date de référence) -->
     <section class="panel" id="settingsPanel">
       <div class="row">
@@ -66,6 +69,51 @@
       </div>
 
       <div class="grid" id="grid"></div>
+    </section>
+    </div>
+    <section class="panel hidden" id="payView">
+      <h2>💶 Calcul paie (estimatif)</h2>
+      <p class="hint">Basé sur ton planning du mois. Ajuste les paramètres pour coller à ta fiche.</p>
+      <div class="grid2">
+        <div class="cardMini">
+          <div class="miniLabel">Heures base (planning)</div>
+          <div class="miniValue" id="payBaseHours">—</div>
+          <div class="miniSub" id="payCounts">—</div>
+        </div>
+        <div class="cardMini">
+          <div class="miniLabel">Heures sup (planning)</div>
+          <div class="miniValue" id="payOtHours">—</div>
+          <div class="miniSub">HS auto + HS ajoutées</div>
+        </div>
+      </div>
+      <hr class="sep"/>
+      <h3>Paramètres</h3>
+      <div class="formGrid">
+        <div class="row"><label>Taux horaire (€)</label><input id="p_rate" type="number" inputmode="decimal" step="0.01"/></div>
+        <div class="row"><label>Heures mensuelles base</label><input id="p_baseH" type="number" inputmode="decimal" step="0.01"/></div>
+        <div class="row"><label>Salaire mensuel base (€)</label><input id="p_monthly" type="number" inputmode="decimal" step="0.01"/></div>
+        <div class="row"><label>Utiliser salaire mensuel</label><select id="p_useMonthly"><option value="yes">Oui</option><option value="no">Non (taux×heures)</option></select></div>
+        <div class="row"><label>Majoration HS (%)</label><input id="p_otPct" type="number" inputmode="decimal" step="0.1"/></div>
+        <div class="row"><label>Majoration Dimanche (%)</label><input id="p_sunPct" type="number" inputmode="decimal" step="0.1"/></div>
+        <div class="row"><label>Majoration Jours fériés (%)</label><input id="p_holPct" type="number" inputmode="decimal" step="0.1"/></div>
+        <div class="row"><label>Prime nuit (€/nuit)</label><input id="p_nightPrime" type="number" inputmode="decimal" step="0.01"/></div>
+        <div class="row"><label>Panier nuit (€/nuit)</label><input id="p_panierN" type="number" inputmode="decimal" step="0.01"/></div>
+        <div class="row"><label>Panier jour (€/jour)</label><input id="p_panierJ" type="number" inputmode="decimal" step="0.01"/></div>
+        <div class="row"><label>Primes fixes mensuelles (€)</label><input id="p_fixed" type="number" inputmode="decimal" step="0.01"/></div>
+        <div class="row"><label>Retenues salariales estimées (%)</label><input id="p_retPct" type="number" inputmode="decimal" step="0.1"/></div>
+        <div class="row"><label>Taux PAS (impôt) (%)</label><input id="p_pasPct" type="number" inputmode="decimal" step="0.1"/></div>
+      </div>
+      <div class="row"><label>Jours fériés (YYYY-MM-DD, séparés par virgule)</label><textarea id="p_holidays" rows="3" placeholder="2026-01-01, 2026-04-06, ..."></textarea></div>
+      <div class="row"><button id="p_save" class="primary" type="button">Enregistrer paramètres</button><button id="p_reset" type="button">Reset</button></div>
+      <hr class="sep"/>
+      <h3>Résultat</h3>
+      <div class="grid2">
+        <div class="cardMini"><div class="miniLabel">Brut estimé</div><div class="miniValue" id="payBrut">—</div><div class="miniSub" id="payBrutDetail">—</div></div>
+        <div class="cardMini"><div class="miniLabel">Net estimé (avant PAS)</div><div class="miniValue" id="payNet">—</div><div class="miniSub">Calcul : Brut × (1 - retenues%)</div></div>
+        <div class="cardMini"><div class="miniLabel">Net estimé (après PAS)</div><div class="miniValue" id="payNetAfter">—</div><div class="miniSub">Déduit le taux PAS</div></div>
+        <div class="cardMini"><div class="miniLabel">Écart (si tu saisis ton net réel)</div><div class="miniValue" id="payGap">—</div><div class="miniSub">Optionnel</div></div>
+      </div>
+      <div class="row"><label>Net réel (optionnel)</label><input id="p_realNet" type="number" inputmode="decimal" step="0.01" placeholder="ex: 2755.82"/></div>
     </section>
   </main>
 
