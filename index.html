@@ -2,150 +2,28 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Planning 5x8</title>
-  <link rel="stylesheet" href="style.css?v=5.0.0" />
-  <meta name="theme-color" content="#111827" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Planning 5×8</title>
+  <link rel="stylesheet" href="app.css" />
 </head>
 <body>
-  <header class="top">
+  <header class="topbar">
     <div class="brand">
-      <h1>Planning 5x8</h1>
-      <p id="subtitle"></p>
+      <div class="brand__title">Planning 5×8</div>
     </div>
-
-    <div class="actions">
-      <button id="prev" type="button" aria-label="Mois précédent">◀</button>
-      <button id="monthBtn" type="button" aria-label="Revenir à aujourd’hui"></button>
-      <button id="next" type="button" aria-label="Mois suivant">▶</button>
-      <button id="toggleSettings" type="button" class="ghost" aria-label="Réglages">⚙︎</button>
-      <button id="showPlanning" type="button" class="ghost" aria-label="Planning">📅</button>
-      <button id="showPay" type="button" class="ghost" aria-label="Paie">💶</button>
+    <div class="row">
+      <button class="iconbtn" onclick="location.hash='#/'">⌂</button>
     </div>
   </header>
 
-  <main class="wrap">
-    <div id="planningView">
-    <!-- Réglages (masqués après enregistrement de la date de référence) -->
-    <section class="panel" id="settingsPanel">
-      <div class="row">
-        <label for="refDate">Date de référence</label>
-        <input id="refDate" type="date" />
-      </div>
-      <div class="row">
-        <label for="refShift">Poste ce jour-là</label>
-        <select id="refShift">
-          <option value="A">Après-midi</option>
-          <option value="M">Matin</option>
-          <option value="N">Nuit</option>
-          <option value="R">Repos</option>
-        </select>
-      </div>
+  <main id="app" class="container"></main>
 
-      <div class="row">
-        <button id="saveRef" class="primary" type="button">Enregistrer</button>
-        <button id="resetAll" class="danger" type="button">Reset (efface tout)</button>
-      </div>
+  <nav class="bottombar">
+    <a class="tab" href="#/">🏠<span>Accueil</span></a>
+    <a class="tab" href="#/planning">📅<span>Planning</span></a>
+    <a class="tab" href="#/paie">💶<span>Paie</span></a>
+  </nav>
 
-      <div class="hint">
-        HS auto : <b>+15 min</b> à chaque journée travaillée (Matin/Après-midi/Nuit). Tu peux ajouter des HS en plus jour par jour.
-      </div>
-    </section>
-
-    <section class="calendar">
-      <div class="calHead">
-        <div class="totals">
-          <div class="statMini">
-            <div class="statMiniLabel">Heures (mois)</div>
-            <div class="statMiniValue" id="monthTotal">—</div>
-            <div class="statMiniSub" id="monthBreakdown"></div>
-          </div>
-          <div class="statMini">
-            <div class="statMiniLabel">Heures (année)</div>
-            <div class="statMiniValue" id="yearTotal">—</div>
-            <div class="statMiniSub" id="yearBreakdown"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid" id="grid"></div>
-    </section>
-    </div>
-    <section class="panel hidden" id="payView">
-      <h2>💶 Calcul paie (estimatif)</h2>
-      <p class="hint">Basé sur ton planning du mois. Ajuste les paramètres pour coller à ta fiche.</p>
-      <div class="grid2">
-        <div class="cardMini">
-          <div class="miniLabel">Heures base (planning)</div>
-          <div class="miniValue" id="payBaseHours">—</div>
-          <div class="miniSub" id="payCounts">—</div>
-        </div>
-        <div class="cardMini">
-          <div class="miniLabel">Heures sup (planning)</div>
-          <div class="miniValue" id="payOtHours">—</div>
-          <div class="miniSub">HS auto + HS ajoutées</div>
-        </div>
-      </div>
-      <hr class="sep"/>
-      <h3>Paramètres</h3>
-      <div class="formGrid">
-        <div class="row"><label>Taux horaire (€)</label><input id="p_rate" type="number" inputmode="decimal" step="0.01"/></div>
-        <div class="row"><label>Heures mensuelles base</label><input id="p_baseH" type="number" inputmode="decimal" step="0.01"/></div>
-        <div class="row"><label>Salaire mensuel base (€)</label><input id="p_monthly" type="number" inputmode="decimal" step="0.01"/></div>
-        <div class="row"><label>Utiliser salaire mensuel</label><select id="p_useMonthly"><option value="yes">Oui</option><option value="no">Non (taux×heures)</option></select></div>
-        <div class="row"><label>Majoration HS (%)</label><input id="p_otPct" type="number" inputmode="decimal" step="0.1"/></div>
-        <div class="row"><label>Majoration Dimanche (%)</label><input id="p_sunPct" type="number" inputmode="decimal" step="0.1"/></div>
-        <div class="row"><label>Majoration Jours fériés (%)</label><input id="p_holPct" type="number" inputmode="decimal" step="0.1"/></div>
-        <div class="row"><label>Prime nuit (€/nuit)</label><input id="p_nightPrime" type="number" inputmode="decimal" step="0.01"/></div>
-        <div class="row"><label>Panier nuit (€/nuit)</label><input id="p_panierN" type="number" inputmode="decimal" step="0.01"/></div>
-        <div class="row"><label>Panier jour (€/jour)</label><input id="p_panierJ" type="number" inputmode="decimal" step="0.01"/></div>
-        <div class="row"><label>Primes fixes mensuelles (€)</label><input id="p_fixed" type="number" inputmode="decimal" step="0.01"/></div>
-        <div class="row"><label>Retenues salariales estimées (%)</label><input id="p_retPct" type="number" inputmode="decimal" step="0.1"/></div>
-        <div class="row"><label>Taux PAS (impôt) (%)</label><input id="p_pasPct" type="number" inputmode="decimal" step="0.1"/></div>
-      </div>
-      <div class="row"><label>Jours fériés (YYYY-MM-DD, séparés par virgule)</label><textarea id="p_holidays" rows="3" placeholder="2026-01-01, 2026-04-06, ..."></textarea></div>
-      <div class="row"><button id="p_save" class="primary" type="button">Enregistrer paramètres</button><button id="p_reset" type="button">Reset</button></div>
-      <hr class="sep"/>
-      <h3>Résultat</h3>
-      <div class="grid2">
-        <div class="cardMini"><div class="miniLabel">Brut estimé</div><div class="miniValue" id="payBrut">—</div><div class="miniSub" id="payBrutDetail">—</div></div>
-        <div class="cardMini"><div class="miniLabel">Net estimé (avant PAS)</div><div class="miniValue" id="payNet">—</div><div class="miniSub">Calcul : Brut × (1 - retenues%)</div></div>
-        <div class="cardMini"><div class="miniLabel">Net estimé (après PAS)</div><div class="miniValue" id="payNetAfter">—</div><div class="miniSub">Déduit le taux PAS</div></div>
-        <div class="cardMini"><div class="miniLabel">Écart (si tu saisis ton net réel)</div><div class="miniValue" id="payGap">—</div><div class="miniSub">Optionnel</div></div>
-      </div>
-      <div class="row"><label>Net réel (optionnel)</label><input id="p_realNet" type="number" inputmode="decimal" step="0.01" placeholder="ex: 2755.82"/></div>
-    </section>
-  </main>
-
-  <dialog id="dayDialog">
-    <form method="dialog" class="dialogForm">
-      <h3 id="dlgTitle"></h3>
-
-      <label for="overrideShift">Statut (remplace le roulement)</label>
-      <select id="overrideShift">
-        <option value="">— Aucun (roulement normal) —</option>
-        <option value="V">Congé</option>
-        <option value="R">Repos</option>
-        <option value="A">Après-midi</option>
-        <option value="M">Matin</option>
-        <option value="N">Nuit</option>
-      </select>
-
-      <div class="smallHint" id="autoHsHint"></div>
-
-      <label for="overtime">Heures supplémentaires ajoutées (en heures)</label>
-      <input id="overtime" type="number" inputmode="decimal" step="0.25" min="0" placeholder="ex: 2 ou 1.5" />
-
-      <label for="note">Note</label>
-      <input id="note" type="text" placeholder="ex: RDV, formation..." />
-
-      <menu class="dlgActions">
-        <button value="cancel" type="submit">Annuler</button>
-        <button id="dlgSave" class="primary" value="default" type="button">Enregistrer</button>
-      </menu>
-    </form>
-  </dialog>
-
-  <script src="app.js?v=5.0.0"></script>
+  <script src="app.js"></script>
 </body>
 </html>
