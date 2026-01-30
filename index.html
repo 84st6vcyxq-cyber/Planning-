@@ -2,26 +2,113 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Planning 5×8</title>
-  <link rel="stylesheet" href="app.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Planning 5x8</title>
+  <link rel="stylesheet" href="style.css?v=5.0.0" />
+  <meta name="theme-color" content="#111827" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand"><div class="brand__title">Planning 5×8</div></div>
-    <div class="row">
-      <button class="iconbtn" onclick="location.hash='#/'">⌂</button>
+  <header class="top">
+    <div class="brand">
+      <h1>Planning 5x8</h1>
+      <p id="subtitle"></p>
     </div>
+
+    <div class="actions">
+      <button id="prev" type="button" aria-label="Mois précédent">◀</button>
+      <button id="monthBtn" type="button" aria-label="Revenir à aujourd’hui"></button>
+      <button id="next" type="button" aria-label="Mois suivant">▶</button>
+      <button id="toggleSettings" type="button" class="ghost" aria-label="Réglages">⚙︎</button>
+    </div>
+  
+    <button id="btnPaie" style="margin-left:8px">💶 Paie</button>
   </header>
 
-  <main id="app" class="container"></main>
+  <main class="wrap">
+    <!-- Réglages (masqués après enregistrement de la date de référence) -->
+    <section class="panel" id="settingsPanel">
+      <div class="row">
+        <label for="refDate">Date de référence</label>
+        <input id="refDate" type="date" />
+      </div>
+      <div class="row">
+        <label for="refShift">Poste ce jour-là</label>
+        <select id="refShift">
+          <option value="A">Après-midi</option>
+          <option value="M">Matin</option>
+          <option value="N">Nuit</option>
+          <option value="R">Repos</option>
+        </select>
+      </div>
 
-  <nav class="bottombar">
-    <a class="tab" href="#/">🏠<span>Accueil</span></a>
-    <a class="tab" href="#/planning">📅<span>Planning</span></a>
-    <a class="tab" href="#/paie">💶<span>Paie</span></a>
-  </nav>
+      <div class="row">
+        <button id="saveRef" class="primary" type="button">Enregistrer</button>
+        <button id="resetAll" class="danger" type="button">Reset (efface tout)</button>
+      </div>
 
-  <script src="app.js"></script>
+      <div class="hint">
+        HS auto : <b>+15 min</b> à chaque journée travaillée (Matin/Après-midi/Nuit). Tu peux ajouter des HS en plus jour par jour.
+      </div>
+    </section>
+
+    <section class="calendar">
+      <div class="calHead">
+        <div class="totals">
+          <div class="statMini">
+            <div class="statMiniLabel">Heures (mois)</div>
+            <div class="statMiniValue" id="monthTotal">—</div>
+            <div class="statMiniSub" id="monthBreakdown"></div>
+          </div>
+          <div class="statMini">
+            <div class="statMiniLabel">Heures (année)</div>
+            <div class="statMiniValue" id="yearTotal">—</div>
+            <div class="statMiniSub" id="yearBreakdown"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+    </section>
+  </main>
+
+  <dialog id="dayDialog">
+    <form method="dialog" class="dialogForm">
+      <h3 id="dlgTitle"></h3>
+
+      <label for="overrideShift">Statut (remplace le roulement)</label>
+      <select id="overrideShift">
+        <option value="">— Aucun (roulement normal) —</option>
+        <option value="V">Congé</option>
+        <option value="R">Repos</option>
+        <option value="A">Après-midi</option>
+        <option value="M">Matin</option>
+        <option value="N">Nuit</option>
+      </select>
+
+      <div class="smallHint" id="autoHsHint"></div>
+
+      <label for="overtime">Heures supplémentaires ajoutées (en heures)</label>
+      <input id="overtime" type="number" inputmode="decimal" step="0.25" min="0" placeholder="ex: 2 ou 1.5" />
+
+      <label for="note">Note</label>
+      <input id="note" type="text" placeholder="ex: RDV, formation..." />
+
+      <menu class="dlgActions">
+        <button value="cancel" type="submit">Annuler</button>
+        <button id="dlgSave" class="primary" value="default" type="button">Enregistrer</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script src="app.js?v=5.0.0"></script>
+
+<dialog id="paieDialog" style="width:90%;max-width:420px">
+  <h3>💶 Période de paie</h3>
+  <label>Du <input type="date" id="paieStart"></label><br>
+  <label>Au <input type="date" id="paieEnd"></label><br><br>
+  <button id="calcPaie">Calculer</button>
+  <pre id="paieResult"></pre>
+  <button onclick="document.getElementById('paieDialog').close()">Fermer</button>
+</dialog>
 </body>
 </html>
